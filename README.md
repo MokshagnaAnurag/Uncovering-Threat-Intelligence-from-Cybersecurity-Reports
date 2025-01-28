@@ -135,6 +135,3 @@ This project is licensed under the [MIT License](LICENSE).
 - [MITRE ATT&CK Framework](https://attack.mitre.org/)
 
 ---
-
-Feel free to report any issues or suggest improvements via the Issues tab on GitHub.
-
