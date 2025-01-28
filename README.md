@@ -1,137 +1,112 @@
 # Uncovering-Threat-Intelligence-from-Cybersecurity-Reports
-# Threat Intelligence Extractor
 
-A Python-based tool for extracting threat intelligence data from cybersecurity reports in PDF format. The tool identifies Indicators of Compromise (IoCs), Tactics, Techniques, and Procedures (TTPs), known malware, threat actors, and targeted entities. Additionally, it integrates with VirusTotal to fetch additional details for detected hashes.
+This project processes PDF reports to extract threat intelligence, including Indicators of Compromise (IoCs), known malware signatures, threat actors, and targeted entities. It uses Python libraries like `pdfplumber`, `re`, and `spaCy` for text extraction, pattern matching, and Named Entity Recognition (NER).
 
 ## Features
 
-- **IoC Extraction:** Extracts IP addresses, domains, file hashes, and email addresses.
-- **TTP Identification:** Maps keywords to MITRE ATT&CK tactics and techniques.
-- **Threat Actor Detection:** Identifies well-known threat actors mentioned in the report.
-- **Malware Identification:** Detects known malware and fetches associated details, including VirusTotal reports.
-- **Targeted Entity Identification:** Identifies organizations or sectors targeted by the threat.
-- **PDF Parsing:** Processes PDF files to extract text.
+- **IoC Extraction**: Extracts IP addresses, domains, file hashes, and email addresses using regular expressions.
+- **Malware Detection**: Matches report content against predefined malware signatures.
+- **Threat Actor Identification**: Identifies mentions of known threat actors.
+- **Targeted Entities Detection**: Uses spaCy's Named Entity Recognition (NER) and predefined entity lists.
+- **Batch Processing**: Processes all PDF files in a given directory.
+- **JSON Output**: Saves results for each processed file in a structured JSON format.
 
-## Prerequisites
+## Requirements
 
-### Python Libraries
-Ensure the following libraries are installed:
+- Python 3.8+
+- Required Python Libraries:
+  - `os`
+  - `re`
+  - `json`
+  - `spacy`
+  - `pdfplumber`
 
-- `os`
-- `re`
-- `json`
-- `requests`
-- `pdfplumber`
-- `nltk`
-
-Install the dependencies using:
+Install the required libraries using:
 ```bash
-pip install pdfplumber requests nltk
+pip install spacy pdfplumber
 ```
 
-### NLTK Data
-The script downloads necessary NLTK data files automatically:
-- `punkt`
-- `stopwords`
+- Download the spaCy model:
+```bash
+python -m spacy download en_core_web_sm
+```
 
-### VirusTotal API Key
-Replace the placeholder `VT_API_KEY` in the script with your actual VirusTotal API key.
+## Configuration
+
+### Malware Signatures
+The `MALWARE_SIGNATURES` dictionary defines malware names, associated keywords, and potential targets. Example:
+```python
+MALWARE_SIGNATURES = {
+    'Shamoon': {
+        'keywords': ['disk wiping', 'destructive', 'saudi aramco', 'energy sector'],
+        'targets': ['energy', 'oil', 'saudi arabia', 'middle east']
+    }
+}
+```
+### Threat Actors
+List known threat actors in the `THREAT_ACTORS` variable:
+```python
+THREAT_ACTORS = ['APT33', 'Fancy Bear', 'Lazarus Group', 'Cozy Bear']
+```
+### Targeted Entities
+Predefine the entities of interest in the `TARGETED_ENTITIES` list:
+```python
+TARGETED_ENTITIES = ['Energy Sector', 'Financial Institutions', 'Government Agencies']
+```
 
 ## Usage
 
-1. Clone the repository:
-    ```bash
-    git https://github.com/MokshagnaAnurag/Uncovering-Threat-Intelligence-from-Cybersecurity-Reports.git
-    ```
-2. Navigate to the project directory:
-    ```bash
-    cd <repository_directory>
-    ```
-3. Update the following paths in the `main()` function:
-    - `directory_path`: Path to the folder containing PDF reports.
-    - `output_folder`: Path to save the JSON output files.
-
-4. Run the script:
-    ```bash
-    python <script_name>.py
-    ```
-
-## File Structure
-
-```plaintext
-.
-├── script.py                 # Main script
-├── README.md                 # Documentation
-├── sample_reports/           # Folder for PDF reports
-├── output_reports/           # Folder for JSON output
-└── requirements.txt          # Dependency list
+1. Place all the PDF files you want to process in a directory.
+2. Update the `directory_path` variable in the `main` function with the path to your directory.
+3. Run the script:
+```bash
+python Code.py
 ```
+4. Extracted results are saved as JSON files in a `JSON_Results` subdirectory within the specified directory.
 
-## Output
-
-- The script generates a JSON file for each processed PDF report.
-- The JSON files are saved in the specified `output_folder`.
-
-### Example JSON Output
+## Example Output
+For a PDF file `example.pdf`, the output JSON structure will look like:
 ```json
 {
     "IoCs": {
-        "IP addresses": ["192.168.1.1"],
+        "IP_addresses": ["192.168.1.1"],
         "Domains": ["example.com"],
-        "File Hashes": ["abcdef1234567890"],
-        "Email Addresses": ["malicious@example.com"]
+        "File_Hashes": ["d41d8cd98f00b204e9800998ecf8427e"],
+        "Email_Addresses": ["example@example.com"]
     },
-    "TTPs": {
-        "Tactics": [
-            ["TA0001", "Initial Access"]
-        ],
-        "Techniques": [
-            ["T1059.001", "Powershell"]
-        ]
-    },
-    "Threat Actor(s)": ["Fancy Bear"],
     "Malware": [
         {
-            "Name": "Emotet",
-            "md5": "abcdef1234567890",
-            "sha1": "1234567890abcdef",
-            "sha256": "abcdef1234567890abcdef1234567890",
-            "ssdeep": "bgfnh....",
-            "TLSH": "bnfdnhg....",
-            "tags": "XYZ",
-            "additional_details": {}
+            "Name": "Shamoon",
+            "Keywords": ["disk wiping", "destructive"],
+            "Potential_Targets": ["energy"]
         }
     ],
-    "Targeted Entities": ["Financial Institutions"]
+    "Threat_Actors": ["APT33"],
+    "Targeted_Entities": ["Energy Sector"]
 }
 ```
 
-## Customization
+## Directory Structure
+```
+project/
+│
+├── script.py         # Main script
+├── JSON_Results/     # Output folder for JSON files
+├── example.pdf       # Sample PDF for testing
+```
 
-- **Add Additional IoCs**: Update regular expressions for IoC extraction.
-- **Extend MITRE ATT&CK Mapping**: Add new tactics or techniques to the `mitre_tactics` and `mitre_techniques` dictionaries.
-- **Expand Malware List**: Add more malware names to the `malware_names` list.
-- **Add New Threat Actors**: Extend the `threat_actors` list.
-- **Include Targeted Entities**: Update the `targeted_entities_list`.
+## Troubleshooting
 
-## Known Limitations
-
-- The PDF parsing depends on the quality of the report; poorly formatted PDFs might lead to missing text.
-- VirusTotal API key usage is rate-limited; ensure you have sufficient quota.
-- The script may not handle all edge cases for IoC filtering.
-
-## Contributing
-
-Contributions are welcome! Please fork the repository, make changes, and submit a pull request. Ensure your code adheres to Python best practices.
+- Ensure the `directory_path` points to an existing directory.
+- Verify that the spaCy model is downloaded:
+  ```bash
+  python -m spacy download en_core_web_sm
+  ```
+- Check for missing libraries and install them as needed.
 
 ## License
+This project is licensed under the MIT License. See the LICENSE file for details.
 
-This project is licensed under the [MIT License](LICENSE).
+## Contributing
+Feel free to submit issues or pull requests for improvements or additional features!
 
-## Acknowledgments
-
-- [VirusTotal API](https://www.virustotal.com/)
-- [pdfplumber Documentation](https://github.com/jsvine/pdfplumber)
-- [MITRE ATT&CK Framework](https://attack.mitre.org/)
-
----
